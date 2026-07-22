@@ -42,7 +42,11 @@ def overlay_heatmap(image_2d, heatmap, alpha=0.4):
     h, w = image_2d.shape
     heatmap_resized = tf.image.resize(heatmap[..., np.newaxis], (h, w)).numpy()[..., 0]
 
-    jet = cm.colormaps["jet"]
+    try:
+        jet = cm.colormaps["jet"]
+    except AttributeError:
+        # older matplotlib (<3.9) doesn't have cm.colormaps
+        jet = cm.get_cmap("jet")
     jet_colors = jet(heatmap_resized)[:, :, :3]
 
     gray_rgb = np.stack([image_2d] * 3, axis=-1)
