@@ -1,5 +1,5 @@
 streamlit
-tensorflow
+tensorflow==2.18.1
 scikit-learn
 shap
 matplotlib
