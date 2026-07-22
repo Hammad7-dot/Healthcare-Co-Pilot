@@ -66,8 +66,29 @@ def train_from_directory(data_dir, epochs=15, img_size=IMG_SIZE):
     train_ds = train_ds.map(lambda x, y: (normalization(x), y))
     val_ds = val_ds.map(lambda x, y: (normalization(x), y))
 
+    # The Kaggle chest-xray-pneumonia train split is heavily imbalanced
+    # (~3875 PNEUMONIA vs ~1341 NORMAL). Without class weighting the model
+    # learns to predict PNEUMONIA almost always, which inflates overall
+    # accuracy while tanking NORMAL recall (missed "healthy" calls aren't
+    # dangerous, but it also means PNEUMONIA precision is misleadingly low
+    # and the confidence scores are unreliable). Weight classes inversely
+    # to their frequency so both classes contribute equally to the loss.
+    counts = {"NORMAL": 0, "PNEUMONIA": 0}
+    for cls in counts:
+        d = os.path.join(data_dir, "train", cls)
+        if os.path.isdir(d):
+            counts[cls] = len(os.listdir(d))
+    total = sum(counts.values())
+    class_weight = None
+    if counts["NORMAL"] and counts["PNEUMONIA"]:
+        class_weight = {
+            0: total / (2 * counts["NORMAL"]),
+            1: total / (2 * counts["PNEUMONIA"]),
+        }
+
     model = build_model(img_size)
-    model.fit(train_ds, validation_data=val_ds, epochs=epochs, verbose=2)
+    model.fit(train_ds, validation_data=val_ds, epochs=epochs, verbose=2,
+              class_weight=class_weight)
     os.makedirs(os.path.dirname(MODEL_PATH), exist_ok=True)
     model.save(MODEL_PATH)
     return model

@@ -50,8 +50,10 @@ On first run, both models auto-train on **synthetic data** (~10-20 seconds on CP
 2. In `models/cnn_pneumonia.py`, call `train_from_directory("data/chest_xray")` instead of `train_on_synthetic()`
 
 **Cardiac risk** (UCI Heart Disease — `archive.ics.uci.edu/dataset/45/heart+disease`):
-1. Download the CSV to `data/heart.csv` (with the 13 standard feature columns + `target`)
-2. In `models/tabular_heart.py`, call `train(csv_path="data/heart.csv")`
+1. Download `processed.cleveland.data` to `data/heart_disease_raw/processed.cleveland.data` (already bundled in this repo)
+2. `df = tabular_heart.load_uci_processed_cleveland(path); tabular_heart.train(df=df)` — this is also what `app.py` does automatically on startup if that file exists.
+
+> ⚠️ **Note:** `data/heart.csv` bundled in this repo is *not* the UCI dataset — it's the Kaggle "Heart Failure Prediction" dataset, which uses an incompatible schema (11 columns, tab-separated, string categoricals like `M`/`F`, no `ca`/`thal`/`target`). Calling `train(csv_path="data/heart.csv")` will now raise a clear `ValueError` instead of silently crashing deep in training — use `load_uci_processed_cleveland()` as shown above instead.
 
 **LLM summarization** (optional): set the `ANTHROPIC_API_KEY` environment variable. Without it, the app falls back to a transparent rule-based summary — no functionality is lost.
 

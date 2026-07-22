@@ -25,9 +25,29 @@ FEATURE_COLS = ["age", "sex", "cp", "trestbps", "chol", "fbs", "restecg",
 
 
 def load_data(csv_path="data/heart.csv"):
-    """Swap csv_path to the real UCI heart.csv for the actual submission."""
+    """
+    Swap csv_path to a real heart-disease CSV for the actual submission.
+    NOTE: the bundled data/heart.csv is the Kaggle "Heart Failure Prediction"
+    dataset, which uses a completely different (tab-separated, 11-column,
+    string-categorical) schema than FEATURE_COLS below. Loading it directly
+    here would raise a confusing KeyError deep inside train(). Prefer
+    load_uci_processed_cleveland() with data/heart_disease_raw/
+    processed.cleveland.data instead -- that file already matches
+    FEATURE_COLS and is what app.py uses by default.
+    """
     if csv_path and os.path.exists(csv_path):
-        return pd.read_csv(csv_path)
+        df = pd.read_csv(csv_path)
+        missing = [c for c in FEATURE_COLS + ["target"] if c not in df.columns]
+        if missing:
+            raise ValueError(
+                f"{csv_path} is missing expected columns {missing}. "
+                "This file does not match the UCI schema FEATURE_COLS expects "
+                "(it looks like the Kaggle Heart Failure Prediction dataset, "
+                "which is a different schema). Use load_uci_processed_cleveland("
+                "'data/heart_disease_raw/processed.cleveland.data') instead, or "
+                "pass a CSV with columns: " + ", ".join(FEATURE_COLS + ["target"])
+            )
+        return df
     return generate_synthetic_heart_data()
 
 
