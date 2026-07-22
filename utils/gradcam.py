@@ -5,7 +5,8 @@ Satisfies the "Explainable AI" mandatory requirement for the image modality.
 
 import numpy as np
 import tensorflow as tf
-import matplotlib.cm as cm
+import matplotlib
+import matplotlib.pyplot as plt
 
 
 def make_gradcam_heatmap(image, model, last_conv_layer_name="conv3_gradcam"):
@@ -43,10 +44,10 @@ def overlay_heatmap(image_2d, heatmap, alpha=0.4):
     heatmap_resized = tf.image.resize(heatmap[..., np.newaxis], (h, w)).numpy()[..., 0]
 
     try:
-        jet = cm.colormaps["jet"]
+        jet = matplotlib.colormaps["jet"]
     except AttributeError:
-        # older matplotlib (<3.9) doesn't have cm.colormaps
-        jet = cm.get_cmap("jet")
+        # older matplotlib (<3.5) doesn't have matplotlib.colormaps
+        jet = plt.get_cmap("jet")
     jet_colors = jet(heatmap_resized)[:, :, :3]
 
     gray_rgb = np.stack([image_2d] * 3, axis=-1)
