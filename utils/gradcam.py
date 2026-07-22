@@ -14,7 +14,7 @@ def make_gradcam_heatmap(image, model, last_conv_layer_name="conv3_gradcam"):
     Returns a (H, W) heatmap in range [0, 1].
     """
     grad_model = tf.keras.models.Model(
-        model.inputs, [model.get_layer(last_conv_layer_name).output, model.output]
+         model.input, [model.get_layer(last_conv_layer_name).output, model.output]
     )
 
     img_batch = np.expand_dims(image, axis=0).astype(np.float32)
@@ -42,7 +42,7 @@ def overlay_heatmap(image_2d, heatmap, alpha=0.4):
     h, w = image_2d.shape
     heatmap_resized = tf.image.resize(heatmap[..., np.newaxis], (h, w)).numpy()[..., 0]
 
-    jet = cm.get_cmap("jet")
+    jet = cm.colormaps["jet"]
     jet_colors = jet(heatmap_resized)[:, :, :3]
 
     gray_rgb = np.stack([image_2d] * 3, axis=-1)
