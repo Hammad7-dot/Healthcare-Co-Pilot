@@ -16,6 +16,22 @@ from data.synthetic_data import generate_synthetic_xray
 IMG_SIZE = 64
 MODEL_PATH = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
                            "saved_models", "cnn_pneumonia.keras")
+TRAINING_SOURCE_PATH = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
+                                     "saved_models", "cnn_pneumonia.training_source.txt")
+
+
+def _write_training_source(source: str):
+    os.makedirs(os.path.dirname(TRAINING_SOURCE_PATH), exist_ok=True)
+    with open(TRAINING_SOURCE_PATH, "w") as f:
+        f.write(source)
+
+
+def get_training_source() -> str:
+    """Returns 'synthetic', 'real', or 'unknown' (older model with no sidecar file)."""
+    if os.path.exists(TRAINING_SOURCE_PATH):
+        with open(TRAINING_SOURCE_PATH) as f:
+            return f.read().strip()
+    return "unknown"
 
 
 def build_model(img_size=IMG_SIZE):
@@ -47,6 +63,7 @@ def train_on_synthetic(epochs=8, n_samples=600):
               epochs=epochs, batch_size=32, verbose=2)
     os.makedirs(os.path.dirname(MODEL_PATH), exist_ok=True)
     model.save(MODEL_PATH)
+    _write_training_source("synthetic")
     return model
 
 
@@ -91,13 +108,21 @@ def train_from_directory(data_dir, epochs=15, img_size=IMG_SIZE):
               class_weight=class_weight)
     os.makedirs(os.path.dirname(MODEL_PATH), exist_ok=True)
     model.save(MODEL_PATH)
+    _write_training_source("real")
     return model
 
 
 def load_or_train():
     if os.path.exists(MODEL_PATH):
         return tf.keras.models.load_model(MODEL_PATH)
-    return train_from_directory("data/chest_xray")
+    real_data_dir = os.path.join(
+        os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "data", "chest_xray"
+    )
+    if os.path.isdir(os.path.join(real_data_dir, "train")):
+        return train_from_directory(real_data_dir)
+    # No real dataset downloaded yet -- fall back to the synthetic demo data so
+    # the app still works immediately with zero external downloads, per README.
+    return train_on_synthetic()
 
 
 def predict(model, image):

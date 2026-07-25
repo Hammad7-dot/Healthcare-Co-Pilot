@@ -58,10 +58,12 @@ def generate_report(
             ("BACKGROUND", (0, 0), (0, -1), colors.whitesmoke),
         ]))
         story.append(t)
-        if xray_image_path:
+        if xray_image_path and os.path.exists(xray_image_path):
             story.append(Spacer(1, 0.1 * inch))
             story.append(RLImage(xray_image_path, width=2.5 * inch, height=2.5 * inch))
             story.append(Paragraph("Grad-CAM overlay: warmer regions influenced the prediction most.", normal))
+        elif xray_image_path:
+            story.append(Paragraph("(Grad-CAM overlay image was unavailable when this report was generated.)", normal))
     else:
         story.append(Paragraph("No imaging data provided.", normal))
 

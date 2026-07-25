@@ -107,7 +107,13 @@ def load_or_train():
         model = tf.keras.models.load_model(MODEL_PATH)
         scaler = joblib.load(SCALER_PATH)
         return model, scaler
-    return train()
+    uci_path = os.path.join(BASE_DIR, "data", "heart_disease_raw", "processed.cleveland.data")
+    if os.path.exists(uci_path):
+        return train(df=load_uci_processed_cleveland(uci_path))
+    # No real dataset available (and data/heart.csv, if bundled, has an
+    # incompatible schema per load_data()'s docstring) -- fall back to
+    # synthetic data so the app still works immediately, per README.
+    return train(df=generate_synthetic_heart_data())
 
 
 def predict(model, scaler, patient_dict):

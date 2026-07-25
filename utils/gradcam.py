@@ -13,6 +13,14 @@ def make_gradcam_heatmap(image, model, last_conv_layer_name="conv3_gradcam"):
     """
     image: np.array (H, W, 1), normalized 0-1
     Returns a (H, W) heatmap in range [0, 1].
+
+    NOTE: this is a binary sigmoid model with a single output unit representing
+    P(PNEUMONIA). Grad-CAM always needs to differentiate w.r.t. the *predicted*
+    class's score, not a fixed class -- otherwise, for a NORMAL prediction, the
+    heatmap would show what pushed the image *towards* PNEUMONIA even though
+    that's not what the model actually predicted. We flip the sign of the loss
+    when the predicted class is NORMAL so the heatmap always explains the
+    class that was actually output.
     """
     grad_model = tf.keras.models.Model(
          model.input, [model.get_layer(last_conv_layer_name).output, model.output]
@@ -22,7 +30,11 @@ def make_gradcam_heatmap(image, model, last_conv_layer_name="conv3_gradcam"):
 
     with tf.GradientTape() as tape:
         conv_outputs, predictions = grad_model(img_batch)
-        loss = predictions[:, 0]
+        pneumonia_score = predictions[:, 0]
+        # If the model predicts NORMAL (score < 0.5), explain "not pneumonia"
+        # (1 - score) instead, so the heatmap reflects the predicted class.
+        predicted_pneumonia = pneumonia_score[0] >= 0.5
+        loss = pneumonia_score if predicted_pneumonia else (1.0 - pneumonia_score)
 
     grads = tape.gradient(loss, conv_outputs)
     pooled_grads = tf.reduce_mean(grads, axis=(0, 1, 2))
