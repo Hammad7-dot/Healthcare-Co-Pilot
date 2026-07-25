@@ -29,8 +29,11 @@ def generate_report(
     hitl_notes=None,
     reviewer_name=None,
     output_path=None,
+
     cnn_training_source=None,
     heart_data_source=None,
+
+
 ):
     if output_path is None:
         output_path = os.path.join(tempfile.gettempdir(), "copilot_report.pdf")
@@ -47,6 +50,7 @@ def generate_report(
     story.append(Paragraph("AI Healthcare Co-Pilot -- Clinical Decision Support Report", title_style))
     story.append(Paragraph(f"Generated: {datetime.now().strftime('%Y-%m-%d %H:%M')} | Patient ID: {patient_id}", normal))
 
+
     version_bits = []
     if cnn_training_source:
         version_bits.append(f"Imaging model trained on: {cnn_training_source} data")
@@ -56,6 +60,7 @@ def generate_report(
         story.append(Paragraph(" | ".join(version_bits), ParagraphStyle(
             "VersionStamp", parent=normal, textColor=colors.grey, fontSize=8
         )))
+
     story.append(Spacer(1, 0.2 * inch))
 
     story.append(Paragraph("1. Imaging Analysis (CNN + Grad-CAM)", h2))

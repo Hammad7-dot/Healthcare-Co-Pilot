@@ -388,8 +388,11 @@ with tab4:
                     hitl_notes=notes,
                     reviewer_name=reviewer_name,
                     output_path=report_path,
+<<<<<<< HEAD
                     cnn_training_source=cnn_pneumonia.get_training_source(),
                     heart_data_source="real (UCI Cleveland)" if os.path.exists(UCI_HEART_PATH) else "synthetic",
+=======
+>>>>>>> 2d7e0bf0112ff57140acb7e3ac7c815ad5beba17
                 )
                 with open(report_path, "rb") as f:
                     pdf_bytes = f.read()

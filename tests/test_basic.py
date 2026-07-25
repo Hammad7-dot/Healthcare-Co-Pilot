@@ -114,6 +114,7 @@ def test_gradcam_heatmap_shape():
     assert heatmap.min() >= 0.0 and heatmap.max() <= 1.0 + 1e-6
 
 
+
 def test_tabular_predict_missing_field_raises_clear_error():
     """A patient_dict missing a required feature should fail predictably, not silently."""
     from models import tabular_heart
@@ -168,6 +169,7 @@ def test_extract_symptoms_detects_urgent_terms():
 
     result = text_triage.extract_symptoms("Patient collapsed with severe chest pain and blue lips.")
     assert result["urgent_flags"], "Urgent terms should be flagged, not silently dropped."
+
 
 
 @pytest.mark.parametrize("bad_id,expected_safe", [
